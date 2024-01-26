@@ -10,7 +10,7 @@
 <dependency>
   <groupId>com.chinamobile.cmos</groupId>
   <artifactId>sms-core</artifactId>
-  <version>2.1.13.4</version>
+  <version>2.1.13.5</version>
 </dependency>
 ```
 
@@ -51,7 +51,7 @@
   
   当连接刚刚建立时[指登陆验证成功]，smsgate会自动调用handler里的userEventTriggered方法，因此在此方法中可以开启一个Consumer去消费MQ里的消息发送到网络连接上；
   
-  当对方发送任意一个消息给你时[包括request,response消息]，smsgate会自动调用handler里的channelRead方法，因此可在此方法内接收消息并作处理业务，但避免作非常耗时的操作，会影响netty的处理效率，甚至完全耗完netty的io线程造成消息不响应；
+  当对方发送任意一个消息给你时[包括request,response消息]，smsgate会自动调用handler里的channelRead方法，因此可在此方法内接收消息并作处理业务，但避免作非常耗时的操作，会影响netty的处理效率，甚至完全耗完netty的io线程造成消息不响应。在channelRead方法里能获取接收到的消息对象，同时通过本Handler的 `getEndpointEntity()`方法，或者 `ctx.channel().attr(GlobalConstance.entityPointKey).get();`能够获取该消息的发送方账号实体Entity对象。
   
   当连接关闭时，smsgate会自动调用handler里的channelInactive方法，可在此方法中实现连接关闭后的一些清理操作。
 
@@ -101,6 +101,22 @@
 ```
    log4j.logger.entity.cmppclientEntityId=debug
 ```
+
+- `在Java9以上版上运行`
+
+```
+	在java9以上运行，启动java进程要增加以下参数：
+	
+--add-opens java.base/java.lang=ALL-UNNAMED
+--add-opens java.base/java.math=ALL-UNNAMED  
+--add-opens java.base/java.util=ALL-UNNAMED  
+--add-opens java.base/java.util.concurrent=ALL-UNNAMED  
+--add-opens java.base/java.net=ALL-UNNAMED   
+--add-opens java.base/java.text=ALL-UNNAMED 
+--add-exports java.base/sun.security.x509=ALL-UNNAMED 
+
+```
+
 
 # 新手指引
 

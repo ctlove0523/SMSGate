@@ -98,7 +98,7 @@ public class TestCMPPEndPoint {
 		client.setGroupName("test");
 		client.setUserName("test01");
 		client.setPassword("1qaz2wsx");
-
+//		client.setProxy("https://localhost");
 		client.setMaxChannels((short) 1);
 		client.setVersion((short) 0x20);
 		client.setRetryWaitTimeSec((short) 30);

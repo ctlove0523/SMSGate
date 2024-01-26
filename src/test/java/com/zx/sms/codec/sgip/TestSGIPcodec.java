@@ -2,6 +2,7 @@ package com.zx.sms.codec.sgip;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,6 +12,9 @@ import com.zx.sms.codec.AbstractSGIPTestMessageCodec;
 import com.zx.sms.codec.sgip12.msg.SgipDefaultMessage;
 import com.zx.sms.codec.sgip12.msg.SgipDeliverRequestMessage;
 import com.zx.sms.codec.sgip12.msg.SgipSubmitRequestMessage;
+import com.zx.sms.codec.sgip12.msg.SgipTraceInfo;
+import com.zx.sms.codec.sgip12.msg.SgipTraceRequestMessage;
+import com.zx.sms.codec.sgip12.msg.SgipTraceResponseMessage;
 import com.zx.sms.common.util.DefaultSequenceNumberUtil;
 import com.zx.sms.common.util.MsgId;
 import com.zx.sms.common.util.SequenceNumber;
@@ -31,6 +35,41 @@ public class TestSGIPcodec extends AbstractSGIPTestMessageCodec<SgipDefaultMessa
 		 System.out.println(msg);
 		 Assert.assertEquals("106559125028", msg.getSpnumber());
 		 Assert.assertEquals("233a", msg.getMsgContent());
+	}
+	
+	
+	@Test
+	public void testTraceRequest () throws DecoderException{
+		SgipTraceRequestMessage tracereq = new SgipTraceRequestMessage();
+		tracereq.setSequenceId(new SequenceNumber(new MsgId()));
+		System.out.println(tracereq.getSequenceId());
+		tracereq.setUsernumber("8613800138000");
+		tracereq.setReserve(String.valueOf(RandomUtils.nextInt(1000000, 10000000))  );
+		testlongCodec(tracereq);
+	}
+	
+	@Test
+	public void testTraceResponse () throws DecoderException{
+		SgipTraceResponseMessage traceres = new SgipTraceResponseMessage();
+
+		SgipTraceInfo[] traceInfos = new SgipTraceInfo[2] ;
+		SgipTraceInfo item1 = new SgipTraceInfo();
+		item1.setResult(0);
+		item1.setNodeId("100001");
+		item1.setReceiveTime("230810235959");
+		item1.setSendTime("230810235959");
+		item1.setReserve(String.valueOf(RandomUtils.nextInt(1000000, 10000000)) );
+		
+		SgipTraceInfo item2 = new SgipTraceInfo();
+		item2.setResult(1);
+		item2.setNodeId("100002");
+		item2.setReceiveTime("230810235959");
+		item2.setSendTime("230810235959");
+		item2.setReserve(String.valueOf(RandomUtils.nextInt(1000000, 10000000)) );
+		traceInfos[0] = item1;
+		traceInfos[1] = item2;
+		traceres.setTraceInfos(traceInfos);
+		testlongCodec(traceres);
 	}
 	
 	@Test
@@ -111,13 +150,21 @@ public class TestSGIPcodec extends AbstractSGIPTestMessageCodec<SgipDefaultMessa
 	    SgipDefaultMessage result = decode(copybuf);
 		Assert.assertNotNull(result);
 		System.out.println(result);
-		Assert.assertNotNull(((LongSMSMessage)result).getUniqueLongMsgId().getId());
+		if(result instanceof LongSMSMessage)
+			Assert.assertNotNull(((LongSMSMessage)result).getUniqueLongMsgId().getId());
+		
 		if(msg instanceof SgipSubmitRequestMessage) {
 			SgipSubmitRequestMessage mt = (SgipSubmitRequestMessage)msg;
 			Assert.assertEquals(mt.getMsgContent(), ((SgipSubmitRequestMessage)result).getMsgContent());
 		}else if(msg instanceof SgipDeliverRequestMessage){
 			SgipDeliverRequestMessage mo = (SgipDeliverRequestMessage)msg;
 			Assert.assertEquals(mo.getMsgContent(), ((SgipDeliverRequestMessage)result).getMsgContent());
+		}else if(msg instanceof SgipTraceRequestMessage) {
+			SgipTraceRequestMessage traceRequest = (SgipTraceRequestMessage)result;
+			Assert.assertEquals(((SgipTraceRequestMessage)msg).toString(), traceRequest.toString());
+		}else if(msg instanceof SgipTraceResponseMessage) {
+			SgipTraceResponseMessage traceResponse = (SgipTraceResponseMessage)result;
+			Assert.assertEquals(((SgipTraceResponseMessage)msg).toString(), traceResponse.toString());
 		}
 		
 		return frameLength;
